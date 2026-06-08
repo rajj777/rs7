@@ -1,0 +1,33 @@
+# Step 1: Create app.py
+echo "import time
+while True:
+    print('Running in Swarm...')
+    time.sleep(5)" > app.py
+
+# Step 2: Create Dockerfile
+echo "FROM python:3.9-slim
+WORKDIR /app
+COPY app.py /app/
+CMD [\"python\", \"app.py\"]" > Dockerfile
+
+# Step 3: Build the Docker image
+docker build -t python-worker .
+
+# Step 4: Initialize Docker Swarm (only once)
+docker swarm init
+
+# Step 5: Deploy the service with 3 replicas
+docker service create --name python-servic --replicas 3 python-worker
+
+# Step 6: Verify the service
+docker service ls
+docker service ps python-servic
+
+# Step 7: Check logs from different running containers
+# First list running containers
+docker ps
+
+# Then check logs for each container (replace <container_id> with actual IDs)
+docker logs <container_id>
+docker logs <container_id>
+docker logs <container_id>

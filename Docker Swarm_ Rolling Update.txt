@@ -1,0 +1,20 @@
+# Step 1: Deploy the initial service with nginx:1.25
+docker service create \
+  --name my_nginx \
+  --replicas 3 \
+  nginx:1.25
+
+# Step 2: Update the service to use nginx:latest
+# Rolling update options: one container at a time, 10s delay
+docker service update \
+  --image nginx:latest \
+  --update-parallelism 1 \
+  --update-delay 10s \
+  my_nginx
+
+# Step 3: Verify update status
+docker service ps my_nginx
+docker service ls
+
+# Step 4: Roll back the service if needed
+docker service rollback my_nginx

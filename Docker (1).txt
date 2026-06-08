@@ -1,0 +1,669 @@
+I: Pull and Run Image
+
+1.Pull the nginx image from Docker Hub.
+->docker pull nginx
+
+2.Run a container from the image.
+->docker run --name mynginx -d -p 8080:80 nginx
+
+3.Check running containers.
+->docker ps
+
+4.Stop the container.
+->docker stop mynginx
+
+5.Remove the container.
+->docker rm mynginx
+
+II: Image Commands Practice
+
+1.Pull alpine image.
+->docker pull alpine
+
+2.List all images available locally.
+->docker images
+
+3.Inspect the alpine image.
+->docker inspect alpine
+
+4.Remove the alpine image
+->docker rmi alpine
+####Error response from daemon: conflict: unable to remove repository 
+reference "alpine" (must force) - container <ID> is using its referenced image
+
+III: Container Commands
+
+1.Run a container using ubuntu image in interactive mode.
+->docker run -it ubuntu
+
+2.Execute Basic Linux Commands
+->ls
+->pwd
+
+3.Exit the Container
+->exit
+
+4.List All Containers
+->docker ps -a
+
+5.Restart the Stopped Container
+->docker start -ai 5a   <-----5a is container id's first two characters
+
+IV: Naming and Renaming
+
+1.Run an nginx container with name web_server
+->docker run -d --name web_server nginx
+
+2.Verify the container name.
+->docker ps
+
+3.Stop the container.
+->docker stop web_server
+
+4.Rename the container to my_server 
+->docker rename web_server my_server
+
+5.Remove the container.
+->docker rm my_server
+
+V: Tagging Docker Image
+
+1.Pull the nginx image
+->docker pull nginx
+
+2.Tag it as mynginx:v1
+->docker tag nginx mynginx:v1
+
+3.Tag it again as mynginx:latest
+->docker tag nginx mynginx:latest
+
+4.List images and verify tags
+->docker images
+
+5.Remove one tag and observe the result
+->docker rmi mynginx:v1
+#### This removes only the tag reference, not the underlying image data.
+#### The image still exists under other tags (mynginx:latest and nginx:latest).
+
+VI: Push Image to Docker Hub
+
+1.Login to Docker Hub
+->docker login -u anurupkaran  <--username
+->password:root
+
+2.Tag your image
+->docker tag nginx anurupkaran/mynginx:v1   <--username is needed
+
+3.Push the image to Docker Hub
+->docker push anurupkaran/mynginx:v1   <--username
+
+4.Logout from Docker Hub
+->docker logout
+
+5.Verify image on Docker Hub website.
+### Go to https://hub.docker.com
+### Log in with your account.
+### Navigate to your repositories — you should see mynginx with the tag v1.
+
+VII:Basic Networking and Port Mapping
+
+1.Run an nginx container with port mapping 8080:80
+->docker run -d -p 8080:80 nginx
+
+2.Open browser and access
+http://localhost:8080
+
+3.List Docker networks
+->docker network ls
+
+4.Inspect the default bridge network
+->docker network inspect bridge
+
+5.Explain: What port mapping does
+### Containers run in their own isolated network space. By default, ports 
+inside a container are not accessible from the host machine.
+
+Q1. Docker Volume Persistence
+
+1.Create a Docker volume named data_vol.
+->docker volume create data_vol  
+
+2.Run a container using this volume mounted at /data
+->docker run -it --name test_container -v data_vol:/data ubuntu 
+
+3.Create a file inside /data 
+->echo "Hello" > /data/hello.txt
+
+4.remove the container
+->docker rm -f test_container
+
+5.Start new container using the same volume
+->docker run -it --name new_container -v data_vol:/data ubuntu 
+
+6.Verify whether the file still exists
+->ls /data    <--- there is file hello.txt
+
+Q2. Dockerfile – Python Application
+
+1.Create a simple Python program that prints a message
+->vim app.py  <---print("python docker file")
+
+2.Write a Dockerfile
+->vim Dockerfile     <----Dockerfile will look like this for python 
+
+# Use an official Python base image
+FROM python:3.9-slim
+
+# Set working directory inside the container
+WORKDIR /app
+
+# Copy the Python script into the container
+COPY app.py .
+
+# Command to run the Python script
+CMD ["python", "app.py"]
+
+3.Build the Docker image
+->docker build -t python-app .
+
+4.Run the container
+->docker run --rm python-app    <---it will run app.py
+
+Q3. Dockerfile – Java Application
+
+1.Write a simple Java program that prints a message.
+->vim Hello.java   <--- this file will look like
+
+public class Hello {
+    public static void main(String[] args) {
+        System.out.println("Hello from Dockerized Java!");
+    }
+}
+
+2.Write a Dockerfile
+->vim Dockerfile    <--- in that file
+
+# Use an official JDK image to compile the program
+FROM openjdk:17-slim AS build
+
+# Set working directory
+WORKDIR /app
+
+# Copy the Java source file
+COPY Hello.java .
+
+# Compile the Java program
+RUN javac Hello.java
+
+# Use a smaller JRE image for running
+FROM openjdk:17-slim
+
+WORKDIR /app
+
+# Copy compiled class file from build stage
+COPY --from=build /app/Hello.class .
+
+# Command to run the program
+CMD ["java", "Hello"]
+
+3.Build the Docker image
+->docker build -t java-app .
+
+4.Run the container
+->docker run --rm java-app  <--it will run Hello.java
+
+Q4. Docker Volume with MySQL
+
+1.Run a MySQL container using a Docker volume for data storage.
+->docker volume create mysql_data
+->docker run -d \ 
+->--name mysql_container \ 
+->-e MYSQL_ROOT_PASSWORD=rootpass \ 
+->-v mysql_data:/var/lib/mysql \ 
+->mysql:8.0
+
+2.Connect to MySQL and create a database
+->docker exec -it mysql_container mysql -u root -p
+
+3.Create a database and table, insert some records
+->CREATE DATABASE testdb;
+->USE testdb;
+->CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(50));
+->INSERT INTO users VALUES (1, 'Alice'), (2, 'Bob');
+
+4.Restart the container
+->docker stop mysql_container
+->docker start mysql_container
+
+5.Verify whether the data persists after restart.
+->docker exec -it mysql_container mysql -u root -p
+->USE testdb;
+->SELECT * FROM users;
++----+-------+
+| id | name  |
++----+-------+
+|  1 | Alice |
+|  2 | Bob   |
++----+-------+
+
+Q5. Dockerfile – Nginx Web Server
+
+1.Create a custom HTML page.
+->vim index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Custom Page</title>
+</head>
+<body>
+    <h1>Hello from Dockerized Nginx!</h1>
+    <p>This is my custom HTML page served using Nginx.</p>
+</body>
+</html>
+
+2.Write a Dockerfile
+->vim Dockerfile
+# Use official Nginx image
+FROM nginx:alpine
+
+# Copy custom HTML page into Nginx default directory
+COPY index.html /usr/share/nginx/html/index.html
+
+3.Build the Docker image
+->docker build -t custom-nginx .
+
+4.Run the container
+->docker run -d -p 8080:80 --name nginx_container custom-nginx
+
+5.Verify in browser
+http://localhost:8080 
+
+Q6. Bind Mount vs Volume
+
+1.Create a directory on the host system and store a file in it.
+->mkdir ~/mydata
+->echo "Hello from host bind mount" > ~/mydata/hostfile.txt
+
+2.Run a container with a bind mount:
+->docker run -it --name bind_test -v ~/mydata:/data ubuntu
+
+3.Inside the container, check:
+->ls /data
+->cat /data/hostfile.txt
+
+4.Compare this with using a Docker volume and explain the difference.
+Bind mounts: Directly expose host files/directories inside a container. 
+Great for development, but tightly coupled to host paths.
+Volumes: Docker-managed storage that persists independently of containers 
+and host paths. Ideal for production and stateful apps.
+
+Q7. Dockerfile – Shell Script Execution
+
+1.Write a shell script
+->vim script.sh
+#!/bin/sh
+echo "Hello from Dockerized Shell Script!"
+echo "System date is: $(date)"
+
+2.Make it executable:
+->chmod +x script.sh
+
+3.Write a Dockerfile
+->vim Dockerfile
+# Use a lightweight base image
+FROM alpine:latest
+
+# Set working directory inside the container
+WORKDIR /app
+
+# Copy the shell script into the container
+COPY script.sh .
+
+# Make sure the script is executable
+RUN chmod +x script.sh
+
+# Command to run the script
+CMD ["./script.sh"]
+
+4.Build the Docker image
+->docker build -t shell-app .
+
+5.Run the container
+->docker run --rm shell-app
+output:Hello from Dockerized Shell Script!
+System date is: Fri Apr 24 12:48:00 IST 2026
+
+Q8. Shared Volume Between Containers
+
+1.Create a Docker volume
+->docker volume create shared_vol
+
+2.Run the first container and write data
+->docker run -it --name container1 -v shared_vol:/data ubuntu
+->echo "Hello from Container 1" > /data/message.txt
+
+3.Run the second container and access data
+->docker run -it --name container2 -v shared_vol:/data ubuntu
+->cat /data/message.txt
+output:Hello from Container 1
+
+4.Verify sharing
+->echo "Hello from Container 2" >> /data/message.txt
+Then Container 1 will see the updated file.
+
+Q1. Docker Compose: Nginx Static Website
+
+1.Create a folder named website:
+->mkdir website
+cd website
+
+2.create index.html
+->vim index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Docker Website</title>
+</head>
+<body>
+    Hello from Docker Compose
+</body>
+</html>
+3.create docker-compose.yml 
+version: '3'
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./website:/usr/share/nginx/html
+
+4.->cd ..
+
+5.Run the Container
+->docker compose up
+
+6.Verify in Browser
+->http://localhost:8080
+
+Q2. Docker Compose: Python Script Container
+
+1.Create a file app.py: print("Hello from Python Container")
+->vim app.py
+print("Hello from Python Container")
+
+2.Create a Dockerfile to run this script
+->vim Dockerfile
+# Use official Python image
+FROM python:3.9-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy script into container
+COPY app.py .
+
+# Run the script
+CMD ["python", "app.py"]
+
+3.Use Docker Compose to run this container
+->vim docker-compose.yml
+version: '3'
+services:
+  python_app:
+    build: .
+    container_name: python_app_container
+
+4.Container should execute script and exit
+->docker compose up
+
+Q3. Docker Compose: MySQL with Volume
+
+1.Project Structure
+mysql-compose/
+└── docker-compose.yml
+
+2.Docker Compose docker-compose.yml
+version: '3'
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_container
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: mydatabase
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
+
+3.Run the Container
+->docker compose up
+
+4.open second terminal and execute
+->docker exec -it mysql_container mysql -u root -p
+
+5.Create table test
+->USE mydatabase;
+CREATE TABLE test (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50)
+);
+INSERT INTO test (name) VALUES ('Persistent Data');
+SELECT * FROM test;
+
+6.Restart container and verify data still exists
+->docker compose down
+->docker compose up
+->docker exec -it mysql_container mysql -u root -p
+->USE mydatabase;
+SELECT * FROM test;
+
+Q4. Docker Compose: One Volume with 3 Nginx Containers 
+
+1.Create one named volume
+nginx-multi/
+├── nginx1/
+│   └── index.html
+├── nginx2/
+│   └── index.html
+├── nginx3/
+│   └── index.html
+└── docker-compose.yml
+
+2.docker-compose.yml
+->version: '3'
+services:
+  nginx1:
+    image: nginx:latest
+    container_name: nginx1
+    ports:
+      - "8081:80"
+    volumes:
+      - shared-data:/usr/share/nginx/html
+      - ./nginx1/index.html:/usr/share/nginx/html/index.html
+
+  nginx2:
+    image: nginx:latest
+    container_name: nginx2
+    ports:
+      - "8082:80"
+    volumes:
+      - shared-data:/usr/share/nginx/html
+      - ./nginx2/index.html:/usr/share/nginx/html/index.html
+
+  nginx3:
+    image: nginx:latest
+    container_name: nginx3
+    ports:
+      - "8083:80"
+    volumes:
+      - shared-data:/usr/share/nginx/html
+      - ./nginx3/index.html:/usr/share/nginx/html/index.html
+
+volumes:
+  shared-data:
+
+3. run container
+->docker compose up
+
+4. verify on browser
+->http://localhost:8081
+->http://localhost:8082
+->http://localhost:8083
+
+Q1. Docker Swarm: Nginx Service
+
+find ip first 
+->ip addr show enp0s3
+
+1.Initialize Docker Swarm.
+->docker swarm init --advertise-addr 10.0.2.15  <---your ip
+
+2.Create the Nginx Service
+->docker service create \
+  --name nginx-service \
+  --replicas 2 \
+  -p 8080:80 \
+  nginx
+
+3.Verify the Service
+->docker service ls
+->docker service ps nginx-service
+
+4.Access Nginx from the browser
+->http://localhost:8080
+
+Q2. Docker Swarm: Python Worker Service
+
+1.Create the Python Script
+->vim app.py
+->import time
+
+while True:
+    print("Running in Swarm...")
+    time.sleep(5)
+
+2.Dockerfile create
+->vim Dockerfile
+-># Use lightweight Python image
+FROM python:3.9-slim
+
+WORKDIR /app
+COPY app.py .
+
+CMD ["python", "app.py"]
+
+3.Build the Docker Image
+->docker build -t python-swarm-app .
+
+4.Deploy the service
+->docker service create \
+  --name python-service \
+  --replicas 3 \
+  python-swarm-app
+
+5.Verify Service
+->docker service ls
+->docker service ps python-service
+
+6.View Logs
+->docker service logs python-service
+
+Q3. Docker Swarm: Scaling Service
+
+1.Deploy an Nginx service with 2 replicas.
+->docker service create --name nginx-service --replicas 2 -p 80:80 nginx
+
+2.Scale the service to 5 replicas.
+->docker service scale nginx-service=5
+
+3.Verify replicas
+->docker service ls
+->docker service ps nginx-service
+
+4.Scale back to 1 replica
+->docker service scale nginx-service=1
+Swarm will terminate 4 containers and keep only 1 running.
+
+Q4. Docker Swarm: Rolling Update
+
+1.Deploy a service using image nginx:1.25
+->docker service create --name nginx-service --replicas 3 -p 8080:80 nginx:1.25
+
+2.Update the service to use image nginx:latest
+Use rolling update options:
+Update one container at a time
+Delay between updates: 10 seconds
+->docker service update \
+  --image nginx:latest \
+  --update-parallelism 1 \
+  --update-delay 10s \
+  nginx-service
+
+3.Verify update status.
+->docker service ls
+->docker service ps nginx-service
+->docker service inspect --pretty nginx-service
+
+4.Roll back if needed
+->docker service update --rollback nginx-service
+
+Q5. Docker Swarm: Remove Service and Leave Swarm
+
+1.List all running services.
+->docker service ls
+
+2.Remove nginx-service
+->docker service rm nginx-service
+
+3.Remove python-service
+->docker service rm python-service
+
+4.Verify services are deleted.
+->docker service ls
+
+5.Leave Docker Swarm mode.
+->docker swarm leave --force
+
+Q6. Create a new docker image using NGINX
+Push it to docker hub
+Create a service on Dockerswarm
+Keep initial replicas as 1 and then increase the replicas to 10
+Reduce the replicas to 2
+Create a new image by modifying “index.html”
+Push to docker hub and then update the service for a new image
+
+>mkdir nginx_project
+>cd nginx_project
+>echo "<h1>Welcome to my custom NGINX server</h1>" > index.html
+>sudo vim Dockerfile
+
+	FROM   nginx:latest 
+	COPY   index.html   /usr/share/nginx/html/index.html
+
+>docker build -t newdelthis/custom-nginx:1.0 .
+>docker run -d -p 9999:80 newdelthis/custom-nginx:1.0
+Browser: localhost:9999
+>docker login
+>docker push newdlethis/custom-nginx:1.0
+>docker swarm init
+>docker service create --name nginx-service --replicas 1 -p 9999:80 newdelthis/custom-nginx:1.0
+>docker service ls
+>docker service scale nginx-service=10
+>docker service ps nginx-service
+>docker service scale nginx-service=2
+>docker service ps nginx-service
+>echo "<h1>Welcome to the updated NGINX server</h1>" > index.html
+>docker build -t newdelthis/custom-nginx:2.0 .
+>docker push newdelthis/custom-nginx:2.0
+>docker service update --image newdelthis/custom-nginx:2.0 nginx-service
+>docker service ps nginx-service
+Browser: localhost:9999
+>docker service rm nginx-service
+
+
+

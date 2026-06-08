@@ -1,0 +1,20 @@
+# Step 1: Initialize Docker Swarm (only once)
+docker swarm init
+
+# Step 2: Create the Nginx service
+# Service name: nginx-service
+# Image: nginx
+# Replicas: 2
+# Map host port 8080 to container port 80
+docker service create --name nginx-service --replicas 2 -p 8080:80 nginx
+
+# Step 3: Verify the service is running
+docker service ls
+
+# Step 4: Check the tasks (replicas) of the service
+docker service ps nginx-service
+
+# Step 5: Access Nginx
+# Option A: Open your browser and go to http://localhost:8080
+# Option B: Test from terminal using curl
+curl http://localhost:8080

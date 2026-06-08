@@ -1,0 +1,54 @@
+git clone https://github.com/demo
+cd demo
+vim first.py
+git status
+git add first.py
+git commit -m 'first.py added'
+git config --global user.name 'KARAN-ANARASE'
+git config --global user.email 'karananarase@gmail.com'
+git push origin main
+username:
+password/token:
+git status
+----------------------------------------------------------------------------------------------------------
+Branch and Merge:
+
+git clone https:github.com/branch-test
+cd branch-test
+vim hello.py
+git add .    <----add all files
+git commit -m "Branch test first commit"
+git push origin main
+username:
+password/token:
+git status
+
+git checkout -b d-1   \__ _ _ _chreate branches
+git checkout -b d-2   /
+
+git checkout d-1       }----- swhich to bug1 1-branch   \
+vim hello.py   <---here suppose bug is resolved          \  
+git add hello.py                                          \
+git commit -m "Edited by Developer-1 hello.py"             \ 
+                                                            \_____resolse 1 bugs from same file hello.py by 
+git checkout d-2       }----- swhich to bug1 2-branch       /     two different Developers,conflict create.
+vim hello.py   <---here suppose bug is resolved            / 
+git add hello.py                                          /
+git commit -m "Edited by Developer-2 hello.py"           /
+
+git merge d-1   <---merge d-1 to d-2 branch
+vim hello.py    <---here conflict resolved mutually
+
+git add hello.py
+git commit -m "conflict resolved"
+
+git merge d1    <---try meging again
+
+git checkout main   <----switch to main branch again
+git merge d-2
+git push origin main  <---all work is push to main branch
+
+git branch -d d-1 \_ _ _ _remove other branches after work done.
+git branch -d d-2 /
+  
+git push origin --delete brach_name   <---it deletes the branch from git_hub     

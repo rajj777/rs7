@@ -1,0 +1,16 @@
+docker swarm init
+
+docker service create --name nginx-service --replicas 2 -p 8080:80 nginx
+
+docker service ls
+docker service ps nginx-service
+
+docker service update --replicas 5 nginx-service
+
+docker service ls
+docker service ps nginx-service
+
+docker service update --replicas 1 nginx-service
+
+docker service ls
+docker service ps nginx-service
