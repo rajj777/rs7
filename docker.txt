@@ -1,0 +1,241 @@
+
+#------------------- Create a C Program and Dockerfile -------------------
+
+# Step 1: Create project folder
+mkdir ~/docker_c_example
+cd ~/docker_c_example
+
+# Step 2: Create C program
+vim user_input.c
+
+#include <stdio.h>
+
+int main() {
+    char name[100];
+    printf("Enter your name: ");
+    scanf("%s", name);
+    printf("Hello, %s!\n", name);
+    return 0;
+}
+
+# Step 3: Create Dockerfile
+vim Dockerfile
+# ----------------------
+FROM	gcc:latest
+WORKDIR	/cdac/ditiss/mycode
+COPY	user_input.c /cdac/ditiss/mycode
+RUN	gcc -o user_input user_input.c
+CMD	["./user_input"]
+# ---------------------
+# Step 4: Build the Docker image
+docker build -t my-ditiss-c .
+
+# Step 5: Run the container interactively
+docker run -it my-ditiss-c
+#------------------- Push and Save Docker Image -------------------
+
+# Step 1: Log in to DockerHub
+docker login
+
+# Step 2: Tag the local image
+# Format: docker tag <local-image> <dockerhub-username>/<repo>:<tag>
+docker tag my-ditiss-c newdelthis/my-ditiss-c:1.0
+
+# Step 3: Push the image to DockerHub
+docker push newdelthis/my-ditiss-c:1.0
+
+# Step 4: Save the image as a backup tar file
+docker save my-ditiss-c -o cprogback.tar
+============================================================================
+
+
+
+
+
+#------------------- Python Add Two Numbers -------------------
+
+# Step 1: Create project folder
+mkdir ~/docker_python_add
+cd ~/docker_python_add
+
+# Step 2: Create Python script
+vin add.py
+# This program takes two numbers as input and prints their sum.
+num1 = float(input("Enter the first number: "))
+num2 = float(input("Enter the second number: "))
+total = num1 + num2
+print(f"The sum is: {total}")
+
+# Step 3: Create Dockerfile
+vim Dockerfile
+# -------------------------------------------------
+FROM python:3.11-slim
+WORKDIR /myapplication
+COPY add.py /myapplication
+CMD ["python", "add.py"]
+# -------------------------------------------------
+
+# Step 4: Build the Docker image
+docker build -t python-sum-app .
+
+# Step 5: Run the container interactively
+docker run -it python-sum-app
+
+===================================================================================
+
+#------------------- Q3. Java Application with Docker -------------------
+
+# Step 1: Create a simple Java program
+vim Hello.java
+
+public class Hello {
+    public static void main(String[] args) {
+        System.out.println("Hello from Dockerized Java Application!");
+    }
+}
+
+# Step 2: Write a Dockerfile
+
+vim Dockerfile
+
+FROM	openjdk:17-slim
+WORKDIR	/app
+COPY	Hello.java .
+RUN	javac Hello.java
+CMD	["java", "Hello"]
+# ----------
+# Step 3: Build the Docker image
+docker build -t java-app .
+docker run --name my-java-app java-app
+
+# Expected Output:  Hello from Dockerized Java Application!
+
+
+
+===============================================================================
+#------------------- Q5. Dockerfile – Nginx Web Server -------------------
+
+# Step 1: Create a custom HTML page
+vim index.html
+
+<html>
+  <head>
+    <title>My Nginx Page</title>
+  </head>
+  <body>
+    <h1>Hello from Dockerized Nginx!</h1>
+  </body>
+</html>
+
+# Step 2: Write a Dockerfile
+vim Dockerfile
+
+FROM	nginx:alpine
+COPY	index.html /usr/share/nginx/html/index.html
+
+
+# Step 3: Build the Docker image
+docker build -t custom-nginx .
+
+# Step 4: Run the container
+docker run -d --name my-nginx -p 8080:80 custom-nginx
+
+# Step 5: Verify output
+# Open browser and visit: http://localhost:8080
+# Expected Output: "Hello from Dockerized Nginx!"
+=====================================================================
+
+#------------------- Apache HTTPD Container Example -------------------
+
+# Step 1: Run an httpd container
+# Name: web5
+# Port mapping: host 7777 → container 80
+docker run -dit --name web5 -p 7777:80 httpd
+
+# Step 2: Create index.html on local machine
+# File: index.html
+<html>
+  <body>
+    <h1>Hello from CDAC!</h1>
+  </body>
+</html>
+
+# Step 3: Copy index.html into container
+docker cp index.html web5:/usr/local/apache2/htdocs/index.html
+
+# Step 4: Verify in browser
+# Open: http://localhost:7777
+# Expected Output: Hello from CDAC!
+
+# Step 5: Modify index.html
+# Change content to:
+<html>
+  <body>
+    <h1>Hello from DITISS!</h1>
+  </body>
+</html>
+
+# Step 6: Copy updated file into container
+docker cp index.html web5:/usr/local/apache2/htdocs/index.html
+
+# Step 7: Verify in browser again
+# Open: http://localhost:7777
+# Expected Output: Hello from DITISS!
+======================================================================
+
+#-------------------MySQL MySQL my sql with docker volume-----------------
+# Create volume for persistent storage
+docker volume create mysql-data
+
+# Run MySQL container with volume
+docker run -d --name my-MySQL -e MYSQL_ROOT_PASSWORD=root123 -v mysql-data:/var/lib/mysql 
+-p 3306:3306 mysql:8	
+
+
+# Connect to MySQL inside container
+docker exec -it my-mysql mysql -uroot -p
+
+# Run these SQL commands line by line
+CREATE DATABASE cdac;
+USE cdac;
+CREATE TABLE IF NOT EXISTS student (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100),
+  score INT
+);
+INSERT INTO student (name, score) VALUES ('Amit', 85);
+SELECT * FROM student;
+exit;
+
+# Stop and remove the container
+docker stop my-mysql
+docker rm my-mysql
+ 
+# run new sql container and check the volume exist
+docker run -d --name my-MySQL -e MYSQL_ROOT_PASSWORD=root123 -p 3306:3306 mysql:8
+docker exec -it my-mysql mysql -uroot -p
+USE cdac;
+SELECT * FROM student;
+
+# Clean the container and volume
+docker stop my-mysql
+docker rm my-mysql
+docker volume rm mysql-data
+docker volume ls
+=====================================================================================
+
+
+#------------------- Push and Save Docker Image -------------------
+
+# Step 1: Log in to DockerHub
+docker login
+
+# Step 2: Tag the local image
+# Format: docker tag <local-image> <dockerhub-username>/<repo>:<tag>
+docker tag my-ditiss-c newdelthis/my-ditiss-c:1.0
+
+# Step 3: Push the image to DockerHub
+docker push newdelthis/my-ditiss-c:1.0
+
+
+
